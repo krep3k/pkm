@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Toko Letris</title>
+  <link rel="stylesheet" href="/public/styles/main.css"/>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+  <header>
+    <div class="container" style="display:flex;justify-content:space-between;align-items:center">
+      <div class="brand">🛍️ Toko <span class="badge">Letris</span></div>
+      <nav class="right">
+        <a href="/dashboard.html" class="btn" id="dashBtn" style="display:none">Dashboard</a>
+        <button class="btn" id="loginBtn">Masuk Google</button>
+        <button class="btn" id="logoutBtn" style="display:none;background:#374151">Keluar</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <label>
+      <input id="search" placeholder="cari produk..."/>
+    </label>
+    <div class="grid" id="productGrid"></div>
+  </main>
+
+  <footer class="container">© 2025 YesKink</footer>
+
+  <script src="/public/scripts/auth.js"></script>
+  <script src="/public/scripts/app.js"></script>
+</body>
+</html>

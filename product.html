@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Produk</title>
+  <link rel="stylesheet" href="/public/styles/main.css"/>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+  <main class="container">
+    <a href="/">← Kembali</a>
+    <div id="detail" class="card" style="margin-top:16px"></div>
+    <label><button class="btn" id="buyBtn">Beli</button></label>
+  </main>
+  <script src="/public/scripts/auth.js"></script>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const id = params.get('id');
+    async function load() {
+      const list = await fetch('/api/products').then(r=>r.json());
+      const p = list.products.find(x=>x.id===id);
+      if (!p) return document.getElementById('detail').innerHTML='Produk tidak ditemukan.';
+      document.getElementById('detail').innerHTML = `
+        <h2>${p.title}</h2>
+        ${p.image_url?`<img src="${p.image_url}" alt="" style="max-width:100%;border-radius:12px">`:''}
+        <p class="price">Rp ${(p.price_cents/100).toLocaleString('id-ID')}</p>
+        <p>${p.description||''}</p>`;
+    }
+    load();
+
+    document.getElementById('buyBtn').onclick = async ()=>{
+      // cek login
+      const me = await (await fetch('/api/me')).json();
+      if (!me.user) return alert('Login dulu ya');
+      const r = await fetch('/api/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:[{product_id:id,qty:1}]})});
+      const j = await r.json();
+      if (r.ok) alert('Order dibuat. ID: '+j.order_id); else alert(j.error||'Gagal');
+    }
+  </script>
+</body>
+</html>

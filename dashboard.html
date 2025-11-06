@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Dashboard Penjual</title>
+  <link rel="stylesheet" href="/public/styles/main.css"/>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+  <header><div class="container"><a href="/">← Kembali</a></div></header>
+  <main class="container">
+    <h2>Buka Toko</h2>
+    <form id="storeForm">
+      <label>Nama unik toko (slug)
+        <input name="slug" required placeholder="mis. toko-tuan"/>
+      </label>
+      <label>Nama tampil
+        <input name="display_name" required placeholder="Toko Tuan"/>
+      </label>
+      <label>Deskripsi
+        <textarea name="description" rows="3"></textarea>
+      </label>
+      <label><input type="submit" class="btn" value="Buat Toko"/></label>
+    </form>
+
+    <h2 style="margin-top:28px">Tambah Produk</h2>
+    <form id="productForm">
+      <label>Slug toko pemilik
+        <input name="store_slug" required placeholder="toko-tuan"/>
+      </label>
+      <label>Judul
+        <input name="title" required/>
+      </label>
+      <label>Deskripsi
+        <textarea name="description" rows="3"></textarea>
+      </label>
+      <label>Harga (rupiah)
+        <input name="price" type="number" min="0" required/>
+      </label>
+      <label>Gambar
+        <input name="image" type="file" accept="image/*"/>
+      </label>
+      <label><input type="submit" class="btn" value="Simpan Produk"/></label>
+    </form>
+  </main>
+
+  <script src="/public/scripts/auth.js"></script>
+  <script>
+    async function mustLogin() {
+      const me = await (await fetch('/api/me')).json();
+      if (!me.user) { alert('Harus login dulu.'); location.href = '/'; }
+    }
+    mustLogin();
+
+    document.getElementById('storeForm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const body = Object.fromEntries(fd.entries());
+      const r = await fetch('/api/stores', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+      const j = await r.json();
+      if (r.ok) alert('Toko dibuat: '+j.store.slug); else alert(j.error||'gagal');
+    });
+
+    document.getElementById('productForm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      let image_url = null;
+      const file = fd.get('image');
+      if (file && file.size) {
+        const u = await fetch('/api/blob/upload-url', {method:'POST'}).then(r=>r.json());
+        await fetch(u.uploadUrl, {method:'PUT', body:file, headers:{'Content-Type': file.type}});
+        image_url = u.uploadUrl.split('?')[0];
+      }
+      const payload = {
+        store_slug: fd.get('store_slug'),
+        title: fd.get('title'),
+        description: fd.get('description'),
+        price_cents: Math.round(Number(fd.get('price'))*100),
+        image_url
+      };
+      const r = await fetch('/api/products', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+      const j = await r.json();
+      if (r.ok) alert('Produk tersimpan'); else alert(j.error||'gagal');
+    });
+  </script>
+</body>
+</html>
